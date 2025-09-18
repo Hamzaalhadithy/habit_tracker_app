@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:habit_tracker_app/register_screen.dart';
 
 
 class LoginScreen extends StatefulWidget{
@@ -26,15 +27,16 @@ class _loginScreenState extends State<LoginScreen>{
         email: _emailCont.text,
         password: _passwordCont.text,
       );
+      ourToast(msg: 'Welcome ${credential.user!.email}');
     } on FirebaseAuthException catch (e){
       if (e.code == 'user-not-found'){
-        Fluttertoast.showToast(msg: 'No user found for this email');
+        ourToast(msg: 'No user found for this email');
       }
       else if (e.code == 'wrong-password'){
-        Fluttertoast.showToast(msg: 'Wrong password');
+        ourToast(msg: 'Wrong password');
       }
       else{
-        Fluttertoast.showToast(msg: e.code.toString(), gravity: ToastGravity.BOTTOM, backgroundColor: Colors.blue.shade700, webPosition: 'center' );
+        ourToast(msg: e.code.toString(),);
       }
     }
   }
@@ -155,6 +157,10 @@ class _loginScreenState extends State<LoginScreen>{
                 OutlinedButton(
                   onPressed: (){
                     // navigate to register screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (builder) => registerScreen())
+                    );
                   },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Colors.white),
@@ -180,4 +186,14 @@ class _loginScreenState extends State<LoginScreen>{
       ),
     );
   }
+}
+
+void ourToast({required String msg}){
+  Fluttertoast.showToast(
+    msg: msg,
+    gravity: ToastGravity.BOTTOM,
+    backgroundColor: Colors.blue.shade700,
+    webPosition: 'center',
+    webBgColor: "linear-gradient(to right, #00008B, #00008B)",
+    );
 }
