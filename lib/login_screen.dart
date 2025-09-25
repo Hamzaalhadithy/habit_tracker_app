@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:habit_tracker_app/habit_tracker_screen.dart';
 import 'package:habit_tracker_app/register_screen.dart';
 
 
@@ -19,26 +20,42 @@ class _loginScreenState extends State<LoginScreen>{
 
   //default credinationals
   final String defaultUsername = "testuser@gmail.com";
-  final String defaultPasword = "password123";
+  final String defaultPassword = "password123";
 
   void _login() async {
-    try{
-      final credential = await _auth.signInWithEmailAndPassword(
-        email: _emailCont.text,
-        password: _passwordCont.text,
+    // try{
+    //   final credential = await _auth.signInWithEmailAndPassword(
+    //     email: _emailCont.text,
+    //     password: _passwordCont.text,
+    //   );
+    //   ourToast(msg: 'Welcome ${credential.user!.email}');
+      
+    // } on FirebaseAuthException catch (e){
+    //   if (e.code == 'user-not-found'){
+    //     ourToast(msg: 'No user found for this email');
+    //   }
+    //   else if (e.code == 'wrong-password'){
+    //     ourToast(msg: 'Wrong password');
+    //   }
+    //   else{
+    //     ourToast(msg: e.code.toString(),);
+    //   }
+    // }
+        // The login logic goes here
+    print("login logic here");
+    final username = _emailCont.text;
+    final password = _passwordCont.text;
+    if (username == defaultUsername && password == defaultPassword) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HabitTrackerScreen(username: username),
+        ),
       );
-      ourToast(msg: 'Welcome ${credential.user!.email}');
-    } on FirebaseAuthException catch (e){
-      if (e.code == 'user-not-found'){
-        ourToast(msg: 'No user found for this email');
-      }
-      else if (e.code == 'wrong-password'){
-        ourToast(msg: 'Wrong password');
-      }
-      else{
-        ourToast(msg: e.code.toString(),);
-      }
     }
+
+
+    
   }
 
 

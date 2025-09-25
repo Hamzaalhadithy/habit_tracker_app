@@ -1,5 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:habit_tracker_app/habit_tracker_screen.dart';
 import 'dart:async';
 import 'login_screen.dart';
 
@@ -63,8 +66,28 @@ class _registerScreenState extends State<registerScreen>{
   }
 
   void _register() async{
-    // will do later
-    print("Registeration logic here");
+    final name = _nameCont.text;
+    final username = _usernameCont.text;
+
+    if(username.isEmpty || name.isEmpty){
+      _showToast('Please filll in all fields');
+      return;
+    }
+
+    Navigator.pushReplacement(context, 
+      MaterialPageRoute(builder: (context) => HabitTrackerScreen(username: username))
+    );
+  }
+
+  void _showToast(String message){
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+      fontSize: 16,
+    );
   }
 
 
