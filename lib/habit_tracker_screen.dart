@@ -1,5 +1,12 @@
-import "package:flutter/material.dart";
+import "dart:convert";
 
+import "package:flutter/material.dart";
+import "package:habit_tracker_app/add_habit_screen.dart";
+import "package:habit_tracker_app/login_screen.dart";
+import "package:habit_tracker_app/personal_info_screen.dart";
+import "package:habit_tracker_app/reports_screen.dart";
+import "package:shared_preferences/shared_preferences.dart";
+import 'notifications_screen.dart';
 class HabitTrackerScreen extends StatefulWidget{
   final String username;
 
@@ -17,11 +24,26 @@ class _HabitTrackerScreenState extends State<HabitTrackerScreen>{
   @override
   void initState(){
     super.initState();
-    name = widget.username; 
-  }
+    _loadUserData();
+    }
 
   Future<void> _saveHabits() async{
-    // save habits on the device later
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selectedHabitsMap', jsonEncode(selectedHabitsMap));
+    await prefs.setString('completedHabitsMap', jsonEncode(completedHabitsMap));
+  }
+
+  Future<void> _loadUserData() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      name = prefs.getString('name') ?? widget.username;
+      selectedHabitsMap = Map<String, String>.from(
+        jsonDecode(prefs.getString('selectedHabitsMap')?? '{}')
+      );
+      completedHabitsMap = Map<String, String>.from(
+        jsonDecode(prefs.getString('completedHabitsMap')?? '{}')
+      );
+    });
   }
 
   Color _getColorFromHex(String hexColor){
@@ -60,6 +82,79 @@ class _HabitTrackerScreenState extends State<HabitTrackerScreen>{
           ),
         ),
         automaticallyImplyLeading: true,
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue.shade700,
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Configure'),
+              onTap: (){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => AddHabitScreen()),
+                ).then((updatedHabit){
+                  _loadUserData();
+                });
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.person),
+              title: Text('Personal Info'),
+              onTap: (){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PersonalInfoScreen(),)
+                ).then((_){
+                  _loadUserData();
+                });
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.analytics),
+              title: Text('Reports'),
+              onTap: (){
+                Navigator.push(
+                  context, 
+                  MaterialPageRoute(
+                    builder: (_) => ReportsScreen()
+                  ),
+                );
+              }
+            ),
+            ListTile(
+              leading: Icon(Icons.notifications),
+              title: Text('Notifications'),
+              onTap: (){
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => NotificationsScreen())
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Sign Out'),
+              onTap: (){
+                signOut(context);
+              },
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: [
@@ -179,13 +274,25 @@ class _HabitTrackerScreenState extends State<HabitTrackerScreen>{
         ],
       ),
       floatingActionButton: selectedHabitsMap.isEmpty ? FloatingActionButton(
-        onPressed: (){},
+        onPressed: (){
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddHabitScreen()),
+          );
+        },
         backgroundColor: Colors.blue.shade700,
         tooltip: 'Add Habits',
         child: const Icon(Icons.add),
       ) : null
     );
 
+  }
+
+  void signOut(BuildContext context) async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=> LoginScreen()));
   }
   Widget _buildHabitCard(String title, Color color, {bool isComp = false}){
     return Card(

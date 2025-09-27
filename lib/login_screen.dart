@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:habit_tracker_app/habit_tracker_screen.dart';
 import 'package:habit_tracker_app/register_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class LoginScreen extends StatefulWidget{
@@ -13,44 +14,39 @@ class LoginScreen extends StatefulWidget{
 }
 
 class _loginScreenState extends State<LoginScreen>{
-  final _emailCont = TextEditingController();
+  final _usernameCont = TextEditingController();
   final _passwordCont = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  // final FirebaseAuth _auth = FirebaseAuth.instance;
 
 
   //default credinationals
-  final String defaultUsername = "testuser@gmail.com";
-  final String defaultPassword = "password123";
+  final String defaultUsername = "admin";
+  final String defaultPassword = "admin";
 
   void _login() async {
-    // try{
-    //   final credential = await _auth.signInWithEmailAndPassword(
-    //     email: _emailCont.text,
-    //     password: _passwordCont.text,
-    //   );
-    //   ourToast(msg: 'Welcome ${credential.user!.email}');
-      
-    // } on FirebaseAuthException catch (e){
-    //   if (e.code == 'user-not-found'){
-    //     ourToast(msg: 'No user found for this email');
-    //   }
-    //   else if (e.code == 'wrong-password'){
-    //     ourToast(msg: 'Wrong password');
-    //   }
-    //   else{
-    //     ourToast(msg: e.code.toString(),);
-    //   }
-    // }
-        // The login logic goes here
-    print("login logic here");
-    final username = _emailCont.text;
+    final username = _usernameCont.text;
     final password = _passwordCont.text;
-    if (username == defaultUsername && password == defaultPassword) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HabitTrackerScreen(username: username),
-        ),
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    if(username == defaultUsername && password == defaultPassword){
+      await prefs.setString('name', 'admin');
+      await prefs.setString('username', 'admin');
+      await prefs.setDouble('age', 25);
+      await prefs.setString('country', 'United States');
+
+      Navigator.pushReplacement(context, 
+        MaterialPageRoute(builder: (context) => HabitTrackerScreen(username: username))
+      );
+    }else{
+      await prefs.clear();
+      Fluttertoast.showToast(
+        msg: "The username or password was INCORRECT",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.red,
+        fontSize: 16,
       );
     }
 
@@ -93,7 +89,7 @@ class _loginScreenState extends State<LoginScreen>{
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: TextField(
-                    controller: _emailCont,
+                    controller: _usernameCont,
                     decoration: InputDecoration(
                       prefixIcon: Icon(Icons.email, color: Colors.blue.shade700,),
                       hintText: 'Enter Username',

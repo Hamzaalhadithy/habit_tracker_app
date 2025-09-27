@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:habit_tracker_app/habit_tracker_screen.dart';
 import 'package:habit_tracker_app/login_screen.dart';
+import 'package:habit_tracker_app/notifications_screen.dart';
+import 'package:habit_tracker_app/personal_info_screen.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -31,7 +33,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const HabitTrackerScreen(username: 'not found',),
+      home:  LoginScreen(),
     );
   }
 }

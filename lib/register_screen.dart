@@ -1,8 +1,13 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:habit_tracker_app/country_list.dart';
 import 'package:habit_tracker_app/habit_tracker_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'login_screen.dart';
 
@@ -33,36 +38,21 @@ class _registerScreenState extends State<registerScreen>{
     'Journal',
     'Walk 10,000 Steps'
   ];
+  final Map<String, Color> _habitColors = {
+    'Amber': Colors.amber,
+    'Red Accent': Colors.redAccent,
+    'Light Blue': Colors.lightBlue,
+    'Light Green': Colors.lightGreen,
+    'Purple Accent': Colors.purpleAccent,
+    'Orange': Colors.orange,
+    'Teal': Colors.teal,
+    'Deep Purple': Colors.deepPurple,
+  };
 
   @override
   void initState(){
     super.initState();
-    _fetchCountries();
-  }
-
-  Future<void> _fetchCountries() async{
-    List<String> subsetCountries = [
-      'Iraq'
-      'United States',
-      'Canada',
-      'United Kingdom',
-      'Australia',
-      'India',
-      'Germany',
-      'France',
-      'Japan',
-      'China',
-      'Brazil',
-      'South Africa',
-      'Iraq'
-    ];
-
-    setState(() {
-      _countries = subsetCountries;
-      _countries.sort();
-      _country = _countries.isNotEmpty ? _countries[0] : 'Iraq';
-    });
-
+    _loadCountries();
   }
 
   void _register() async{
@@ -74,11 +64,36 @@ class _registerScreenState extends State<registerScreen>{
       return;
     }
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    Map<String, String> selectedHabitsMap = {};
+    final random = Random();
+    final ColorKeys = _habitColors.keys.toList();
+    for (var habit in selectedHabits){
+      var randomColor = _habitColors[ColorKeys[random.nextInt(ColorKeys.length)]]!;
+      selectedHabitsMap[habit] = randomColor.value.toRadixString(16);
+    }
+
+    await prefs.setString('name', name);
+    await prefs.setString('username', username);
+    await prefs.setDouble('age', _age);
+    await prefs.setString('country', _country);
+    await prefs.setString('selectedHabitsMap', jsonEncode(selectedHabitsMap));
+
     Navigator.pushReplacement(context, 
       MaterialPageRoute(builder: (context) => HabitTrackerScreen(username: username))
     );
   }
 
+  void _toggleHabitsSelections(String habit){
+    setState(() {
+      if (selectedHabits.contains(habit)){
+        selectedHabits.remove(habit);
+      }else{
+        selectedHabits.add(habit);
+      }
+    });
+  }
   void _showToast(String message){
     Fluttertoast.showToast(
       msg: message,
@@ -88,6 +103,19 @@ class _registerScreenState extends State<registerScreen>{
       textColor: Colors.white,
       fontSize: 16,
     );
+  }
+
+
+  Future<void> _loadCountries() async{
+    try{
+      List<String> countries = await fetchCountries();
+
+      setState(() {
+        _countries = countries;
+      });
+    }catch(e){
+      _showToast("Error fetching countries");
+    }
   }
 
 
@@ -162,18 +190,7 @@ class _registerScreenState extends State<registerScreen>{
                   children: availableHabits.map((habit){
                     final isSelected = selectedHabits.contains(habit);
                     return GestureDetector(
-                      onTap: (){
-                        setState(() {
-                          if(isSelected){
-                            selectedHabits.removeWhere((item) => item == habit);
-                          }
-                          if(!isSelected){
-                            selectedHabits.add(habit);
-                          }
-                          
-                        });
-
-                      },
+                      onTap: () => _toggleHabitsSelections(habit),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         decoration: BoxDecoration(
